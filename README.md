@@ -95,9 +95,11 @@ topsis_sensitivity/
 │   └── app.py                 Streamlit user interface
 ├── tests/
 │   ├── test_topsis.py         hand-calculated cases, method properties, invalid input
-│   └── test_sensitivity.py    hand-calculated cases, properties, reproducibility
+│   ├── test_sensitivity.py    hand-calculated cases, properties, reproducibility
+│   └── test_clean_data.py     unit parsing, System codes, raw CSV -> clean CSV
 ├── requirements.txt
-└── pytest.ini
+├── pytest.ini
+└── LICENSE
 ```
 
 `topsis.py` and `sensitivity.py` are pure functions without Streamlit, so they
@@ -111,6 +113,9 @@ author) with properties the method must satisfy: invariance to column scale and
 to weight scale, a dominant alternative scoring 1, identical alternatives sharing
 a rank, a zero weight being equivalent to dropping the criterion, reproducible
 Monte Carlo results for a fixed seed, and readable errors for invalid input.
+The data-cleaning tests check unit conversion (e.g. TB to GB, g to kg), the
+`System` codes, rejection of malformed values, and that `laptops_clean.csv` is
+up to date with `laptops.csv`.
 
 ## Results and conclusions
 
@@ -130,9 +135,10 @@ Monte Carlo results for a fixed seed, and readable errors for invalid input.
 
 ### Ranking
 
-With these weights two laptops stand out: **L03** (Lenovo Legion 5, score 0.576) and
-**L04** (Lenovo Legion Pro 5, 0.571) are almost tied and clearly ahead of the next L09
-(Asus Vivobook 16, 0.526). All remaining laptops score 0.50 or less.
+With these weights two laptops stand out: **L03** (Lenovo Legion 5, score 0.557) and
+**L04** (Lenovo Legion Pro 5, 0.555) are almost tied. They are followed by **L05**
+(Asus ROG Strix G16, 0.535) and **L09** (Asus Vivobook 16, 0.508). All remaining
+laptops score 0.48 or less.
 
 ![Ranking for the author's weights](docs/personalised_ranking.png)
 
@@ -140,31 +146,35 @@ With these weights two laptops stand out: **L03** (Lenovo Legion 5, score 0.576)
 
 The ranking is not stable: small changes in the weights can change the top pick.
 In the Monte Carlo simulation (n = 5000, concentration = 50, seed = 0) L03, despite being
-first in the ranking, wins only about 26% of the simulations, while L04 wins about
-46%. If robustness to the choice of weights matters most, L04 is the safer choice.
-Both laptops reach the top three in roughly 72–73% of the simulations. L09 wins
-about 25% of the time, practically as often as L03, however it is not as often in the top three.
+first in the ranking, wins only about 25% of the simulations, while L04 wins about
+44%. L04 also reaches the top three slightly more often (about 72% against 71% for L03),
+so if robustness to the choice of weights matters most, L04 is the safer choice.
+L09 wins about 25% of the time, practically as often as L03, but reaches the top three
+far less often (about 42%). It does, however, have the best mean rank (3.2), because
+it rarely falls far down the ranking.
 
 ![Monte Carlo: share of first places and top-three places](docs/montecarlo.png)
 
-Beyond the three expected leaders, L05 (in the top three in about half of the
-simulations) and, to a lesser extent, L01 (about a quarter) also score highly,
-although they almost never come first. Both are worth keeping on the shortlist
-for the final decision. 
+L05 is a strong contender as well: it reaches the top three in about 62% of the
+simulations, although it comes first in fewer than 4%. L01 is in the top three in
+about a quarter of the simulations and almost never comes first. Both are worth
+keeping in mind for the final decision.
 
 ### Sensitivity to the Price weight (one-at-a-time)
 
 Price has the largest weight, so it was varied from 0 to 1 while the other
 weights kept their proportions (21 grid points, step 0.05). The winner changes
-three times:
+four times:
 
 | Price weight | Winner |
 |---|---|
-| 0.00–0.25 | L04 |
+| 0.00–0.10 | L05 |
+| 0.15–0.25 | L04 |
 | 0.30 | L03 |
 | 0.35–0.55 | L09 |
 | 0.60–1.00 | L01 |
 
+When price barely matters (weight up to 0.10), the most powerful laptop, L05, wins.
 The author's weight (0.28) lies right between the grid points where L04 and L03
 swap places. This explains why the two are almost tied and why the Monte Carlo
 winner changes so often: a small random change in the Price weight is enough to
@@ -179,17 +189,17 @@ first place from about 0.35 (L09) and 0.6 (L01). The high-performance laptops
 behave the opposite way: L04 and L05 drop to 10th and 11th place once the Price
 weight exceeds about 0.35.
 
-**Conclusion:** the 0.005 difference between L03 and L04 is smaller than the
+**Conclusion:** the 0.002 difference between L03 and L04 is smaller than the
 effect of weight uncertainty, and the choice depends mainly on how much price
-matters. The analysis supports a shortlist (L04, L03, L09, then L05) rather than
-a single winner: L04 if price is less important than in the author's weights,
-L03 at the author's weights, and L09 or L01 if price dominates.
+matters. The analysis supports a shortlist (L04, L03, then L05 and L09) rather than
+a single winner: L05 if price hardly matters, L04 if price is less important than
+in the author's weights, L03 at the author's weights, and L09 or L01 if price dominates.
 
 ## Limitations
 
 - **Weights are subjective.** The sensitivity analysis shows how much they matter
   but cannot choose them.
-  By default all critera are set to have the same weight.
+  By default all criteria are set to have the same weight.
   This can be changed in the app.
 - **Correlated criteria.** CPU and GPU scores tend to rise together, so performance
   can effectively be counted twice.
@@ -199,6 +209,10 @@ L03 at the author's weights, and L09 or L01 if price dominates.
 - **Snapshot data.** Prices reflect a single day; only weight uncertainty is
   analysed, not uncertainty in the data.
 - **Small sample.** 11 laptops from one shop, not a market overview.
+
+## License
+
+MIT, see [LICENSE](LICENSE).
 
 ---
 

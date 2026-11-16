@@ -17,42 +17,41 @@ from topsis import topsis
 # Expected scores are given to 4 decimal places.
 SCORE_TOL = 5e-5
 
+# Each case: decision matrix, weights, directions, expected scores,
+# expected ranks (1 = best).
 HAND_CASES = [
     pytest.param(
         [[4, 80, 10], [6, 90, 8], [3, 60, 12]],
         [0.5, 0.3, 0.2],
         ["min", "max", "max"],
-        [0.6578,0.2531,0.7469],
-        [1, 2, 0],
+        [0.6578, 0.2531, 0.7469],
+        [2, 3, 1],
         id="mixed_gain_cost",
     ),
     pytest.param(
         [[20, 15, 30], [10, 25, 20], [15, 10, 15]],
         [0.4, 0.4, 0.2],
         ["min", "min", "min"],
-        [0.4198,0.4445,0.7494],
-        [2, 1, 0],
+        [0.4198, 0.4445, 0.7494],
+        [3, 2, 1],
         id="all_cost",
     ),
 ]
 
 
-
-
 # --- Hand-calculated cases (author) -------------------------------------------
 
 
-@pytest.mark.parametrize("data, weights, signs, expected_score, expected_rank0", HAND_CASES)
-def test_hand_calculated_scores(data, weights, signs, expected_score, expected_rank0):
-    result = topsis(pd.DataFrame(data), weights, signs)
-    np.testing.assert_allclose(result["score"], expected_score, rtol=0, atol=SCORE_TOL)
+@pytest.mark.parametrize("data, weights, directions, expected_scores, expected_ranks", HAND_CASES)
+def test_hand_calculated_scores(data, weights, directions, expected_scores, expected_ranks):
+    result = topsis(pd.DataFrame(data), weights, directions)
+    np.testing.assert_allclose(result["score"], expected_scores, rtol=0, atol=SCORE_TOL)
 
 
-@pytest.mark.parametrize("data, weights, signs, expected_score, expected_rank0", HAND_CASES)
-def test_hand_calculated_ranks(data, weights, signs, expected_score, expected_rank0):
-    # The author's ranks are 0-based (0 = best); topsis() returns 1-based ranks.
-    result = topsis(pd.DataFrame(data), weights, signs)
-    assert result["rank"].tolist() == [r + 1 for r in expected_rank0]
+@pytest.mark.parametrize("data, weights, directions, expected_scores, expected_ranks", HAND_CASES)
+def test_hand_calculated_ranks(data, weights, directions, expected_scores, expected_ranks):
+    result = topsis(pd.DataFrame(data), weights, directions)
+    assert result["rank"].tolist() == expected_ranks
 
 
 # --- Properties of the method -------------------------------------------------
