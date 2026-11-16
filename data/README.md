@@ -21,7 +21,6 @@ Prices change frequently; the results reflect the prices on the collection date.
 |---|---|---|
 | `ID` | Short identifier (L01, L02, ...), used as the index | - |
 | `Name` | Full product name as listed in the shop | - |
-| `Short_name` | Short label for charts and tables | - |
 | `Price` | PLN | cost (min) |
 | `System` | Ordinal code: 0 = no OS, 1 = Windows 11 Home, 2 = Windows 11 Pro | benefit (max) |
 | `RAM` | GB | benefit (max) |

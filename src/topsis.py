@@ -1,8 +1,6 @@
 """TOPSIS (Technique for Order of Preference by Similarity to Ideal Solution).
 
-Pure functions only: no Streamlit, no file I/O, no global state.
-The input is an already-numeric decision matrix (alternatives x criteria);
-parsing raw data (units such as "16GB" or "1.9kg") is not done here.
+The input is an already-numeric decision matrix (alternatives x criteria).
 """
 
 from __future__ import annotations
@@ -109,6 +107,78 @@ def validate_inputs(
     return x, w / w.sum(), is_max
 
 
+def closeness(x: np.ndarray, w: np.ndarray, is_max: np.ndarray) -> np.ndarray:
+    """Compute TOPSIS closeness coefficients for one or many weight vectors.
+
+    This is the numeric core of TOPSIS, without input validation (call
+    :func:`validate_inputs` first). Accepting a batch of weight vectors lets
+    the sensitivity analysis evaluate thousands of weightings in one
+    vectorized call while using exactly the same formulas as :func:`topsis`.
+
+    Args:
+        x: Decision matrix, shape ``(m, k)`` (m alternatives, k criteria).
+        w: Weights summing to 1, shape ``(k,)`` or ``(n, k)`` for n weightings.
+        is_max: Boolean mask of shape ``(k,)``; True = benefit (max) criterion.
+
+    Returns:
+        Closeness coefficients, shape ``(m,)`` or ``(n, m)``.
+
+    Raises:
+        ValueError: if C_i is 0/0 (all alternatives identical on every
+            criterion with a positive weight).
+    """
+    w = np.asarray(w, dtype=float)
+
+    # 1. Vector normalization: r_ij = x_ij / sqrt(sum_i x_ij^2)
+    r = x / np.sqrt((x**2).sum(axis=0))
+
+    # 2. Weighted normalized matrix: v_ij = w_j * r_ij
+    #    w[..., None, :] has shape (1, k) or (n, 1, k), so v is (m, k) or (n, m, k).
+    v = r * w[..., None, :]
+
+    # 3. Ideal (A+) and anti-ideal (A-) solutions, depending on direction.
+    #    Max/min are taken over alternatives (axis -2), separately per weighting.
+    col_max = v.max(axis=-2, keepdims=True)
+    col_min = v.min(axis=-2, keepdims=True)
+    ideal = np.where(is_max, col_max, col_min)
+    anti_ideal = np.where(is_max, col_min, col_max)
+
+    # 4. Euclidean distances to A+ and A- (summing over criteria, axis -1)
+    d_plus = np.sqrt(((v - ideal) ** 2).sum(axis=-1))
+    d_minus = np.sqrt(((v - anti_ideal) ** 2).sum(axis=-1))
+
+    # 5. Closeness coefficient C_i = d-_i / (d+_i + d-_i)
+    denom = d_plus + d_minus
+    if (denom == 0).any():
+        # Happens only when all alternatives are identical on every criterion
+        # with a positive weight, so A+ == A- and C_i is 0/0.
+        # Decision (author): raise an error instead of inventing a score.
+        raise ValueError(
+            "All alternatives are identical on every weighted criterion; "
+            "the TOPSIS score is undefined."
+        )
+    return d_minus / denom
+
+
+def competition_rank(scores: np.ndarray) -> np.ndarray:
+    """Rank scores in descending order along the last axis ("1-1-3" ranking).
+
+    rank_i = 1 + number of alternatives with a strictly higher score, so tied
+    scores share the best rank and the following rank is skipped
+    (scores 0.9, 0.9, 0.5 -> ranks 1, 1, 3).
+
+    Args:
+        scores: Shape ``(m,)`` or ``(n, m)``.
+
+    Returns:
+        Integer ranks with the same shape as ``scores``.
+    """
+    scores = np.asarray(scores, dtype=float)
+    # higher[..., i, j] is True when alternative j scores strictly above i.
+    higher = scores[..., np.newaxis, :] > scores[..., :, np.newaxis]
+    return 1 + higher.sum(axis=-1)
+
+
 def topsis(
     matrix: pd.DataFrame,
     weights: WeightsLike,
@@ -131,39 +201,11 @@ def topsis(
         ``rank`` - 1 = best; ties use competition ranking (1, 1, 3).
 
     Raises:
-        ValueError: if the inputs are invalid (see :func:`validate_inputs`).
+        ValueError: if the inputs are invalid (see :func:`validate_inputs`)
+            or the score is undefined (see :func:`closeness`).
     """
     x, w, is_max = validate_inputs(matrix, weights, directions)
-
-    # 1. Vector normalization: r_ij = x_ij / sqrt(sum_i x_ij^2)
-    r = x / np.sqrt((x**2).sum(axis=0))
-
-    # 2. Weighted normalized matrix: v_ij = w_j * r_ij
-    v = r * w
-
-    # 3. Ideal (A+) and anti-ideal (A-) solutions, depending on direction
-    col_max, col_min = v.max(axis=0), v.min(axis=0)
-    ideal = np.where(is_max, col_max, col_min)
-    anti_ideal = np.where(is_max, col_min, col_max)
-
-    # 4. Euclidean distances to A+ and A-
-    d_plus = np.sqrt(((v - ideal) ** 2).sum(axis=1))
-    d_minus = np.sqrt(((v - anti_ideal) ** 2).sum(axis=1))
-
-    # 5. Closeness coefficient C_i = d-_i / (d+_i + d-_i)
-    denom = d_plus + d_minus
-    if (denom == 0).any():
-        # Happens only when all alternatives are identical on every criterion
-        # with a positive weight, so A+ == A- and C_i is 0/0.
-        # Decision (author): raise an error instead of inventing a score.
-        raise ValueError(
-            "All alternatives are identical on every weighted criterion; "
-            "the TOPSIS score is undefined."
-        )
-    score = d_minus / denom
-
-    result = pd.DataFrame({"score": score}, index=matrix.index)
-    # Ties use standard competition ranking ("1-1-3"): equal scores share the
-    # best rank and the next rank is skipped.
-    result["rank"] = result["score"].rank(ascending=False, method="min").astype(int)
-    return result
+    score = closeness(x, w, is_max)
+    return pd.DataFrame(
+        {"score": score, "rank": competition_rank(score)}, index=matrix.index
+    )
