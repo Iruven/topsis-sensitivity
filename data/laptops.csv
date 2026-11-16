@@ -1,0 +1,12 @@
+Name,Price,System,RAM,Memory,CPU_name,CPU_score,GPU_name,GPU_score,Display,Battery,Weight
+Laptop HP 255R G10 Ryzen 5 7535U / 8 GB / 512 GB / W11 (B9YQ0ET),2499,Windows 11 Home,8GB,512 GB,AMD Ryzen 5 7535U,15445,AMD Radeon 660M,3197,60hz,41Wh,1.66kg
+Laptop Lenovo ThinkPad E16 G3 Ultra 7 258V / 32 GB / 1 TB / W11 Pro (22AY0089PB),6759,Windows 11 Pro,32GB,1024GB,Intel Core Ultra 7 258V,18883,Intel Arc Graphics 140V,5148,60hz,64Wh,1.63kg
+Laptop Lenovo Legion 5 15AHP11 Ryzen 7 250 / 16 GB / 512 GB / RTX 5070 / 165 Hz / Windows 11 Pro (83Q7003JPB),8999,Windows 11 Pro,16GB,512GB,AMD Ryzen 7 250,25113,NVIDIA GeForce RTX 5070 Laptop GPU,22556,165hz,80Wh,1.87kg
+Laptop Lenovo Legion Pro 5 16ADR10 Ryzen 9 8945HX / 32 GB / 1 TB / RTX 5070 / 240 Hz / Windows 11 Pro (83LT001WPB),13099,Windows 11 Pro,32GB,1024GB,AMD Ryzen 9 8945HX,51341,NVIDIA GeForce RTX 5070 Laptop GPU,22556,240hz,80Wh,2.4kg
+Laptop Asus ROG Strix G16 G615 Ultra 9 290HX Plus / 32 GB / 1 TB / RTX 5080 / 300 Hz (G615LW-U9R321),15690,None,32GB,1024GB,Intel Core Ultra 9 290HX Plus,57942,NVIDIA GeForce RTX 5080 Laptop GPU,19093,300hz,90Wh,2.65kg
+Laptop Gigabyte Gaming A18 3VH Ryzen 7 260 / 16 GB / 512 GB / RTX 5060 / 165 Hz / Windows 11 Home (3VHK3EEC93SD),6249,Windows 11 Home,16GB,512GB,AMD Ryzen 7 260,28197,NVIDIA GeForce RTX 5060 Laptop GPU,6278,165hz,76Wh,2.8kg
+Laptop MSI Katana 15 HX B14WFK-020XPL Core i7-14650HX / 16 GB / 512 GB / RTX 5060 / 165 Hz / Windows 11 Home,6549,Windows 11 Home,16GB,512GB,Intel Core i7-14650HX,33243,NVIDIA GeForce RTX 5060 Laptop GPU,6278,165hz,75Wh,2.4kg
+Laptop Lenovo Legion 5 15AHP11 Ryzen 7 250 / 16 GB / 512 GB / RTX 5050 / 165 Hz / Windows 11 Pro (83Q7002FPB),6799,Windows 11 Pro,16GB,512GB,AMD Ryzen 7 250,25113,NVIDIA GeForce RTX 5050 Laptop GPU,5128,165hz,80Wh,1.87kg
+Laptop Asus Vivobook 16 X1607CA Core Ultra 5 225H / 16 GB / 512 GB / 60 Hz / Windows 11 Home (X1607CA-MB058),3999,Windows 11 Home,16GB,512GB,Intel Core Ultra 5 225H,27907,Intel Arc 130T GPU,6046,60hz,42Wh,1.88kg
+Laptop Dell Pro 15 Essential PV15250 i5-1334U / 16 GB / 512 GB / W11 Pro / 120 Hz (PV15250_RPLU_005_P),3634,Windows 11 Pro,16GB,512GB,Intel Core i5-1334U,12943,Intel UHD Graphics,1543,120hz,41Wh,1.9kg
+Laptop Lenovo LOQ 15AHP9 Ryzen 7 7445HS / 16 GB / 512 GB / RTX 4050 / 144 Hz / Windows 11 Pro (83DX00EVPB),4999,Windows 11 Pro,16GB,512GB,AMD Ryzen 7 7445HS,18438,NVIDIA GeForce RTX 4050 Laptop GPU,5829,144hz,60Wh,2.38kg
