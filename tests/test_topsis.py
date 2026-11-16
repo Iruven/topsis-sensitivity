@@ -13,8 +13,6 @@ import pytest
 
 from topsis import topsis
 
-# Author's notation: "+" = gain (max), "-" = cost (min).
-SIGN_TO_DIRECTION = {"+": "max", "-": "min"}
 
 # Expected scores are given to 4 decimal places.
 SCORE_TOL = 5e-5
@@ -23,7 +21,7 @@ HAND_CASES = [
     pytest.param(
         [[4, 80, 10], [6, 90, 8], [3, 60, 12]],
         [0.5, 0.3, 0.2],
-        ["-", "+", "+"],
+        ["min", "max", "max"],
         [0.6578,0.2531,0.7469],
         [1, 2, 0],
         id="mixed_gain_cost",
@@ -31,7 +29,7 @@ HAND_CASES = [
     pytest.param(
         [[20, 15, 30], [10, 25, 20], [15, 10, 15]],
         [0.4, 0.4, 0.2],
-        ["-", "-", "-"],
+        ["min", "min", "min"],
         [0.4198,0.4445,0.7494],
         [2, 1, 0],
         id="all_cost",
@@ -39,8 +37,6 @@ HAND_CASES = [
 ]
 
 
-def _directions(signs: list[str]) -> list[str]:
-    return [SIGN_TO_DIRECTION[s] for s in signs]
 
 
 # --- Hand-calculated cases (author) -------------------------------------------
@@ -48,14 +44,14 @@ def _directions(signs: list[str]) -> list[str]:
 
 @pytest.mark.parametrize("data, weights, signs, expected_score, expected_rank0", HAND_CASES)
 def test_hand_calculated_scores(data, weights, signs, expected_score, expected_rank0):
-    result = topsis(pd.DataFrame(data), weights, _directions(signs))
+    result = topsis(pd.DataFrame(data), weights, signs)
     np.testing.assert_allclose(result["score"], expected_score, rtol=0, atol=SCORE_TOL)
 
 
 @pytest.mark.parametrize("data, weights, signs, expected_score, expected_rank0", HAND_CASES)
 def test_hand_calculated_ranks(data, weights, signs, expected_score, expected_rank0):
     # The author's ranks are 0-based (0 = best); topsis() returns 1-based ranks.
-    result = topsis(pd.DataFrame(data), weights, _directions(signs))
+    result = topsis(pd.DataFrame(data), weights, signs)
     assert result["rank"].tolist() == [r + 1 for r in expected_rank0]
 
 
