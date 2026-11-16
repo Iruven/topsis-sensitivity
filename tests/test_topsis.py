@@ -80,6 +80,14 @@ def test_invariant_to_weight_scale():
     )
 
 
+def test_zero_weight_is_same_as_dropping_the_column():
+    # The app's "Include" checkbox relies on this: an excluded criterion gets weight 0.
+    with_zero = topsis(BASE, [0.5, 0.0, 0.2], BASE_D)
+    dropped = topsis(BASE.drop(columns="b"), [0.5, 0.2], ["min", "max"])
+    np.testing.assert_allclose(with_zero["score"], dropped["score"], rtol=0, atol=1e-12)
+    assert with_zero["rank"].tolist() == dropped["rank"].tolist()
+
+
 def test_dominant_alternative_is_ideal():
     # Best on every criterion -> equals the ideal solution -> d+ = 0 -> score 1.
     m = pd.DataFrame([[1, 9, 9], [2, 5, 3], [3, 4, 8]])

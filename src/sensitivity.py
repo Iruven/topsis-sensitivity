@@ -235,8 +235,12 @@ def monte_carlo(
 
 
 def _format_share(share: float) -> str:
-    """Format a share as a percentage; tiny non-zero shares become '<1%'."""
-    if 0 < share < 0.005:
+    """Format a share as a percentage; non-zero shares below 1% become '<1%'.
+
+    Without this, e.g. 0.005 would be rounded to "0%" although the
+    alternative did win some simulations.
+    """
+    if 0 < share < 0.01:
         return "<1%"
     return f"{share:.0%}"
 
